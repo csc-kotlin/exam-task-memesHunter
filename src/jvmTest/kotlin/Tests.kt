@@ -25,24 +25,43 @@ class Tests {
         }.toList()
     }
 
-    private fun doTest(request: StatisticRequest, gold: StatisticResponse, testCase: Int) {
+    private fun doTest(request: StatisticRequest, gold: StatisticResponse): String {
         val actual = getResponse(request)
 
         if (gold.topWorlds != actual.topWorlds) {
-            throw WrongAnswer("top 5 words differs", testCase)
+            return "Fail, top 5 words differs\n" +
+                    "Gold - ${gold.topWorlds}, actual - ${actual.topWorlds}"
         }
 
-        if (gold.images != actual.images) {
-            throw WrongAnswer("media differs", testCase)
+        val common = actual.images.intersect((gold.images))
+        val diff = actual.images.union(gold.images).subtract(common)
+
+        if (gold.images.size != actual.images.size) {
+            return "Fail, gold size is ${gold.images.size}, but actual - ${actual.images.size}\n" +
+                    "Absolute - ${diff.size}, percentage - ${diff.size.toDouble() / gold.images.size}"
         }
+
+        return "success"
     }
 
     @Test
     fun test() {
         val cases = getTestCases()
+        val result = cases.mapIndexed { index, data ->
+            val prefix = "Test case ${index + 1} for request ${data.request}: "
+            val suffix = try {
+                doTest(data.request, data.response)
+            } catch (wa: WrongAnswer) {
+                wa.message!!
+            }
 
-        cases.forEachIndexed { index, data ->
-            doTest(data.request, data.response, index)
+            prefix + suffix
+        }.joinToString(separator = "\n")
+
+        println(result)
+
+        if (result.contains("Fail")) {
+            throw Exception()
         }
     }
 }

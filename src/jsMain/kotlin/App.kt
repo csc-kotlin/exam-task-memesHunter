@@ -28,10 +28,10 @@ val AppRoutes = FC<Props> {
                 menuItems =
                     mapOf("/" to "Home") +
                             if (isAuthorized) {
-                                mapOf("history" to "History")
+                                mapOf("history" to "History", "crawl" to "Run Crawl")
                             }
                             else {
-                                mapOf()
+                                mapOf("history" to "History")
                             }
             }
 
@@ -50,11 +50,21 @@ val AppRoutes = FC<Props> {
                     path = "history"
                     element = createElement(HistoryPage)
                 }
+
+                Route {
+                    path = "crawl"
+                    element = createElement(CrawlPage)
+                }
             }
             else {
                 Route {
                     path = "login"
                     element = createElement(LoginPage)
+                }
+
+                Route {
+                    path = "history"
+                    element = createElement(HistoryPage)
                 }
             }
 
