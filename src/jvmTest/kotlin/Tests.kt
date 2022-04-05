@@ -3,6 +3,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
+import ru.diamant.rabbit.application.workers.processStatistic
 import ru.diamant.rabbit.common.model.StatisticRequest
 import ru.diamant.rabbit.common.model.StatisticResponse
 import java.io.InputStreamReader
@@ -15,7 +16,7 @@ data class TestQuery(val request: StatisticRequest, val response: StatisticRespo
 class Tests {
     class WrongAnswer(reason: String, testCase: Int) : Exception("Error in test#$testCase - $reason")
 
-    private fun getResponse(request: StatisticRequest): StatisticResponse = TODO("provide api to your backend")
+    private suspend fun getResponse(request: StatisticRequest): StatisticResponse = processStatistic(request)
 
     private fun getTestCases(): List<TestQuery> = ZipFile("TestCases.zip").use { file ->
         file.entries().asSequence().map { entry ->
@@ -25,7 +26,7 @@ class Tests {
         }.toList()
     }
 
-    private fun doTest(request: StatisticRequest, gold: StatisticResponse): String {
+    private suspend fun doTest(request: StatisticRequest, gold: StatisticResponse): String {
         val actual = getResponse(request)
 
         if (gold.topWorlds != actual.topWorlds) {
@@ -45,7 +46,7 @@ class Tests {
     }
 
     @Test
-    fun test() {
+    suspend fun test() {
         val cases = getTestCases()
         val result = cases.mapIndexed { index, data ->
             val prefix = "Test case ${index + 1} for request ${data.request}: "
