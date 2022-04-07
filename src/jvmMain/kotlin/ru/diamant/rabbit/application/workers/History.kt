@@ -1,41 +1,50 @@
 package ru.diamant.rabbit.application.workers
 
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import ru.diamant.rabbit.common.model.StatisticRequest
-import ru.diamant.rabbit.common.model.StatisticResponse
+import ru.diamant.rabbit.common.model.HistoryEntry
 import java.io.File
-import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 import java.text.SimpleDateFormat
 import java.util.Date
 
-@Serializable
-data class HistoryEntry(val request: StatisticRequest? = null, val response: StatisticResponse? = null)
+private val illegalFilenameCharactersRegex = Regex("""[./:\\"*?<>|]""")
+private val defaultCharset = Charsets.UTF_8
+private const val historyPath = "history"
 
 fun saveToHistory(requestUrl: String, requestLevel: String, response: String) {
-    val currentDate = SimpleDateFormat("dd_MM_yyyy").format(Date())
-    val url = requestUrl.substringAfter("//").replace("[./:\"*?<>|]".toRegex(), "_")
-    println("Writing to file: history/$currentDate/($requestLevel)_$url.json")
+    println("Started saving of request: $requestUrl $requestLevel")
 
-    val filePath = Path.of("history/$currentDate/($requestLevel)_$url.json")
+    // getting current date in <day_month_year> format
+    val currentDate = SimpleDateFormat("dd_MM_yyyy").format(Date())
+
+    // stripping requestUrl of protocol if it has one
+    // replacing illegal characters with "_"
+    val url = requestUrl.substringAfter("//").replace(illegalFilenameCharactersRegex, "_")
+
+    val filePath = Path.of("$historyPath/$currentDate/($requestLevel)_$url.json")
     if (!Files.exists(filePath)) Files.createDirectories(filePath.parent)
 
-    File("history/$currentDate/($requestLevel)_$url.json").printWriter(Charset.forName("UTF-8")).use { out ->
-        out.println("{\"request\":{\"url\":\"$requestUrl\",\"level\":$requestLevel},\"response\":$response}")
+    println("Writing to file: $filePath")
+    File(filePath.toString())
+        .printWriter(defaultCharset)
+        // combining request and response into single json of HistoryEntry format
+        .use {
+        it.println("{\"request\":{\"url\":\"$requestUrl\",\"level\":$requestLevel},\"response\":$response}")
     }
+    println("Saved")
 }
 
 fun loadHistory(): List<HistoryEntry> {
-    return File("history/")
+    println("Started loading of history")
+    return File(historyPath)
         .walk()
         .filter { it.isFile }
         .map { file ->
             println("Loading: $file")
             Json.decodeFromString<HistoryEntry>(
-                file.bufferedReader().use { it.readLine() }
+                file.bufferedReader().use { it.readText() }
             )
         }
         .toList()

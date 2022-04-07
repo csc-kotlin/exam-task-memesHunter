@@ -44,13 +44,7 @@ fun Routing.configureApi() {
 
 fun Route.configurePublicApi() {
     get("/loadFromHistory") {
-        println("---------------------------------")
-        println("Started loading of history")
-        val result = loadHistory().map { entry -> entry.request to entry.response }
-        println("Loaded")
-        println("---------------------------------")
-
-        call.respond(HttpStatusCode.OK, result)
+        call.respond(HttpStatusCode.OK, loadHistory())
     }
 }
 
@@ -60,24 +54,14 @@ fun Route.configureAuthorizedApi() {
         val url = call.request.queryParameters["url"] ?: error("Error parsing URL")
         val level = call.request.queryParameters["level"]?.toInt() ?: error("Error parsing level")
 
-        println("---------------------------------")
-        println("Started work with url: $url at maxlevel: $level")
-        val response = processStatistic(StatisticRequest(url, level))
-        println("Work done")
-        println("---------------------------------")
-
-        call.respond(HttpStatusCode.OK, response)
+        call.respond(HttpStatusCode.OK, processStatistic(StatisticRequest(url, level)))
     }
     get("/saveToHistory") {
         val requestUrl = call.request.queryParameters["url"] ?: error("Error parsing URL")
         val requestLevel = call.request.queryParameters["lvl"] ?: error("Error parsing level")
         val response = call.request.queryParameters["res"] ?: error("Error parsing response")
 
-        println("---------------------------------")
-        println("Started saving of request: $requestUrl $requestLevel")
         saveToHistory(requestUrl, requestLevel, response)
-        println("Saved")
-        println("---------------------------------")
 
         call.respond(HttpStatusCode.OK)
     }

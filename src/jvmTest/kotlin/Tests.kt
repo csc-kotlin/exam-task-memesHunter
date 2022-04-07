@@ -61,7 +61,7 @@ class Tests {
 
         println(result)
 
-        if (result.contains("Fail")) {
+        if ("Fail" in result) {
             throw Exception()
         }
     }

@@ -7,7 +7,7 @@ import react.dom.html.ReactHTML
 import react.key
 import react.router.Outlet
 import react.router.dom.Link
-import ru.diamant.rabbit.common.model.StatisticRequest
+import ru.diamant.rabbit.common.model.HistoryEntry
 import ru.diamant.rabbit.common.model.StatisticResponse
 
 external interface CommonPageProps : Props {
@@ -17,7 +17,7 @@ external interface CommonPageProps : Props {
 external interface StateUpdatableProps : Props {
     var updateResponse: (StatisticResponse) -> Unit
     var startLoading: () -> Unit
-    var updateHistory: (List<Pair<StatisticRequest, StatisticResponse>>) -> Unit
+    var updateHistory: (List<HistoryEntry>) -> Unit
 }
 
 val CommonPage = FC<CommonPageProps> { props ->

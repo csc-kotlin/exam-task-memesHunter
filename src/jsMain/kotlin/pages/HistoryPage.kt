@@ -7,12 +7,12 @@ import kotlinx.coroutines.launch
 import react.FC
 import react.dom.html.ReactHTML
 import react.useState
-import ru.diamant.rabbit.common.model.StatisticRequest
+import ru.diamant.rabbit.common.model.HistoryEntry
 import ru.diamant.rabbit.common.model.StatisticResponse
 
 val HistoryPage = FC<StateUpdatableProps> { prop ->
     var lastResponse: StatisticResponse? by useState(null)
-    var historyEntries: List<Pair<StatisticRequest, StatisticResponse>> by useState(emptyList())
+    var historyEntries: List<HistoryEntry> by useState(emptyList())
 
     ReactHTML.h2 { +"History" }
 
@@ -40,12 +40,14 @@ val HistoryPage = FC<StateUpdatableProps> { prop ->
     ReactHTML.div {
         id = "historyButtons"
 
-        historyEntries.forEach { pair ->
+        historyEntries.forEach { (request, response) ->
             ReactHTML.button {
                 onClick = {
-                    prop.updateResponse(pair.second)
+                    prop.updateResponse(response)
                 }
-                +"[Level:${pair.first.level}] ${pair.first.url.take(20)}"
+                +"[Level:${request.level}] ${
+                    if (request.url.length <= 20) request.url else "${request.url.take(17)}..."
+                }"
             }
         }
     }

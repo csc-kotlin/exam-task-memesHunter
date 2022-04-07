@@ -11,9 +11,12 @@ import ru.diamant.rabbit.common.model.StatisticResponse
 var inputUrl: String = ""
 var inputLevel: String = ""
 
+private val initialResponseState = null
+private val initialShowState = true
+
 val CrawlPage = FC<StateUpdatableProps> { prop ->
-    var lastResponse: StatisticResponse? by useState(null)
-    var readyToShow: Boolean by useState(true)
+    var lastResponse: StatisticResponse? by useState(initialResponseState)
+    var readyToShow: Boolean by useState(initialShowState)
 
     prop.updateResponse = { response ->
         lastResponse = response
